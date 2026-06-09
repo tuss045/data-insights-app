@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Data → Insights | AI Workflow</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --surface2: #f1f0ed;
+    --border: rgba(0,0,0,0.1);
+    --border-md: rgba(0,0,0,0.18);
+    --text: #1a1a18;
+    --text2: #5a5a56;
+    --text3: #9a9a94;
+    --blue: #2563eb;
+    --blue-bg: #eff6ff;
+    --blue-text: #1d4ed8;
+    --green-bg: #f0fdf4;
+    --green-text: #15803d;
+    --red-bg: #fef2f2;
+    --red-text: #dc2626;
+    --yellow-bg: #fefce8;
+    --yellow-text: #a16207;
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #242422;
+      --surface2: #2e2e2c;
+      --border: rgba(255,255,255,0.08);
+      --border-md: rgba(255,255,255,0.15);
+      --text: #e8e8e2;
+      --text2: #a0a09a;
+      --text3: #606058;
+      --blue-bg: #1e2d4a;
+      --blue-text: #93c5fd;
+      --green-bg: #14251e;
+      --green-text: #86efac;
+      --red-bg: #2c1515;
+      --red-text: #fca5a5;
+      --yellow-bg: #2a2010;
+      --yellow-text: #fde68a;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container { max-width: 700px; margin: 0 auto; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 2rem; }
+  .header h1 { font-size: 28px; font-weight: 600; margin-bottom: 6px; }
+  .header h1 span { color: var(--blue); }
+  .header p { font-size: 14px; color: var(--text2); }
+
+  /* API Key banner */
+  .api-banner {
+    background: var(--yellow-bg);
+    border: 1px solid var(--border-md);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .api-banner.hidden { display: none; }
+  .api-banner-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .api-banner-body { flex: 1; }
+  .api-banner-body p { font-size: 13px; color: var(--yellow-text); margin-bottom: 8px; }
+  .api-key-row { display: flex; gap: 8px; }
+  .api-key-row input {
+    flex: 1; padding: 8px 12px; font-size: 13px; font-family: monospace;
+    border: 1px solid var(--border-md); border-radius: 8px;
+    background: var(--surface); color: var(--text);
+  }
+  .api-key-row input:focus { outline: 2px solid var(--blue); }
+  .btn-sm {
+    padding: 8px 14px; font-size: 13px; font-weight: 500;
+    border-radius: 8px; border: none; cursor: pointer;
+    background: var(--blue); color: white; white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+  .btn-sm:hover { opacity: 0.85; }
+
+  /* Pipeline bar */
+  .pipeline {
+    display: flex; align-items: center; gap: 4px;
+    margin-bottom: 1.5rem; padding: 12px 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow-x: auto;
+  }
+  .pip { display: flex; align-items: center; gap: 5px; padding: 4px 10px;
+    border-radius: 20px; font-size: 12px; font-weight: 500;
+    color: var(--text3); white-space: nowrap; transition: all 0.3s; }
+  .pip.active { background: var(--blue-bg); color: var(--blue-text); }
+  .pip.done { background: var(--green-bg); color: var(--green-text); }
+  .pip-arr { color: var(--text3); font-size: 11px; flex-shrink: 0; }
+
+  /* Card */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem;
+  }
+
+  .label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--text3); margin-bottom: 10px;
+  }
+
+  /* Sample buttons */
+  .sample-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .sample-btn {
+    font-size: 12px; padding: 5px 12px; border-radius: 20px;
+    border: 1px solid var(--border-md); background: transparent;
+    color: var(--text2); cursor: pointer; transition: all 0.15s;
+  }
+  .sample-btn:hover { background: var(--surface2); color: var(--text); }
+  .sample-btn.active { background: var(--blue-bg); border-color: var(--blue); color: var(--blue-text); }
+
+  /* Textarea */
+  textarea {
+    width: 100%; min-height: 140px; resize: vertical;
+    font-family: 'Courier New', monospace; font-size: 12px;
+    padding: 10px 12px; border-radius: var(--radius);
+    border: 1px solid var(--border-md); background: var(--surface2);
+    color: var(--text); line-height: 1.65;
+  }
+  textarea:focus { outline: 2px solid var(--blue); border-color: transparent; }
+
+  /* Focus chips */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .chip {
+    font-size: 12px; padding: 5px 12px; border-radius: 20px;
+    border: 1px solid var(--border-md); background: transparent;
+    color: var(--text2); cursor: pointer; transition: all 0.15s;
+  }
+  .chip:hover { background: var(--surface2); }
+  .chip.sel { background: var(--blue-bg); border-color: var(--blue); color: var(--blue-text); }
+
+  /* Run button */
+  .run-btn {
+    width: 100%; margin-top: 14px; padding: 11px;
+    font-size: 14px; font-weight: 600; border-radius: var(--radius);
+    border: none; background: var(--blue); color: white;
+    cursor: pointer; transition: opacity 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .run-btn:hover:not(:disabled) { opacity: 0.88; }
+  .run-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* Error */
+  .error {
+    margin-top: 10px; padding: 10px 14px; border-radius: var(--radius);
+    background: var(--red-bg); color: var(--red-text);
+    font-size: 13px; display: none;
+  }
+  .error.show { display: block; }
+
+  /* Loading */
+  .loading { display: none; flex-direction: column; gap: 10px; padding: 0.5rem 0; }
+  .loading.show { display: flex; }
+  .load-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text2); }
+  .load-dot {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--border-md); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 11px;
+  }
+  .load-dot.spin { border-top-color: var(--blue); animation: spin 0.8s linear infinite; }
+  .load-dot.done { background: var(--green-bg); border-color: var(--green-text); color: var(--green-text); font-weight: 700; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Results */
+  .results { display: none; }
+  .results.show { display: block; }
+
+  /* KPI grid */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .kpi {
+    background: var(--surface2); border-radius: var(--radius);
+    padding: 14px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .kpi-lbl { font-size: 11px; color: var(--text2); }
+  .kpi-val { font-size: 22px; font-weight: 600; color: var(--text); }
+  .kpi-sub { font-size: 11px; color: var(--text3); }
+  .badge {
+    display: inline-block; font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 5px; margin-top: 2px;
+  }
+  .badge-up { background: var(--green-bg); color: var(--green-text); }
+  .badge-dn { background: var(--red-bg); color: var(--red-text); }
+  .badge-nt { background: var(--yellow-bg); color: var(--yellow-text); }
+
+  /* Narrative */
+  .narrative { font-size: 13px; line-height: 1.8; color: var(--text2); white-space: pre-wrap; }
+
+  /* Recs */
+  .recs { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .rec {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px; border-radius: var(--radius);
+    border: 1px solid var(--border); font-size: 13px;
+    color: var(--text); line-height: 1.55;
+  }
+  .rec-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0; margin-top: 5px;
+  }
+  .dot-high { background: #ef4444; }
+  .dot-med  { background: #f59e0b; }
+  .dot-low  { background: #3b82f6; }
+
+  /* Footer actions */
+  .footer-btns { display: flex; gap: 8px; margin-top: 1rem; flex-wrap: wrap; }
+  .footer-btns button {
+    flex: 1; min-width: 120px; padding: 9px 12px; font-size: 13px;
+    border-radius: var(--radius); border: 1px solid var(--border-md);
+    background: var(--surface); color: var(--text2); cursor: pointer;
+    transition: background 0.15s;
+  }
+  .footer-btns button:hover { background: var(--surface2); color: var(--text); }
+
+  /* Card section title */
+  .card-title {
+    font-size: 14px; font-weight: 600; color: var(--text);
+    margin-bottom: 12px; display: flex; align-items: center; gap: 7px;
+  }
+
+  /* Powered by */
+  .powered {
+    text-align: center; font-size: 11px; color: var(--text3);
+    margin-top: 2rem; padding-bottom: 1rem;
+  }
+  .powered a { color: var(--text3); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Data <span>→</span> Insights</h1>
+    <p>Paste raw data, get instant AI-powered business analysis</p>
+  </div>
+
+  <!-- API Key banner -->
+  <div class="api-banner" id="api-banner">
+    <div class="api-banner-icon">🔑</div>
+    <div class="api-banner-body">
+      <p>Enter your free <strong>Groq API key</strong> to activate. Get one free at <a href="https://console.groq.com" target="_blank" style="color:inherit;font-weight:600">console.groq.com</a> → API Keys.</p>
+      <div class="api-key-row">
+        <input type="password" id="api-key-input" placeholder="gsk_...your key here..." autocomplete="off"/>
+        <button class="btn-sm" onclick="saveKey()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pipeline -->
+  <div class="pipeline">
+    <div class="pip active" id="pip0">📥 Raw data</div>
+    <span class="pip-arr">›</span>
+    <div class="pip" id="pip1">⚙️ Parse</div>
+    <span class="pip-arr">›</span>
+    <div class="pip" id="pip2">📊 Analyse</div>
+    <span class="pip-arr">›</span>
+    <div class="pip" id="pip3">💡 Insights</div>
+    <span class="pip-arr">›</span>
+    <div class="pip" id="pip4">🚀 Actions</div>
+  </div>
+
+  <!-- Input card -->
+  <div class="card">
+    <div class="label">Sample datasets</div>
+    <div class="sample-row">
+      <button class="sample-btn active" onclick="loadSample('sales',this)">Sales report</button>
+      <button class="sample-btn" onclick="loadSample('ecom',this)">E-commerce</button>
+      <button class="sample-btn" onclick="loadSample('social',this)">Social media</button>
+      <button class="sample-btn" onclick="loadSample('hr',this)">HR / headcount</button>
+    </div>
+
+    <div class="label">Paste your data (CSV or plain text)</div>
+    <textarea id="raw-input" placeholder="Paste CSV, key-value, or tabular data here…"></textarea>
+
+    <div class="label" style="margin-top:14px">Analysis focus</div>
+    <div class="chips">
+      <button class="chip sel" data-f="trends" onclick="toggleChip(this)">📈 Trends</button>
+      <button class="chip sel" data-f="anomalies" onclick="toggleChip(this)">⚠️ Anomalies</button>
+      <button class="chip sel" data-f="kpis" onclick="toggleChip(this)">📊 KPIs</button>
+      <button class="chip" data-f="risks" onclick="toggleChip(this)">🛡️ Risks</button>
+      <button class="chip" data-f="opportunities" onclick="toggleChip(this)">🚀 Opportunities</button>
+    </div>
+
+    <button class="run-btn" id="run-btn" onclick="runAnalysis()">
+      ✨ Generate insights
+    </button>
+    <div class="error" id="error-box"></div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="load-row"><div class="load-dot" id="l0"></div><span>Parsing data structure…</span></div>
+    <div class="load-row"><div class="load-dot" id="l1"></div><span>Running statistical analysis…</span></div>
+    <div class="load-row"><div class="load-dot" id="l2"></div><span>Identifying patterns &amp; anomalies…</span></div>
+    <div class="load-row"><div class="load-dot" id="l3"></div><span>Generating business recommendations…</span></div>
+  </div>
+
+  <!-- Results -->
+  <div class="results" id="results">
+
+    <div class="card">
+      <div class="card-title">📌 Key metrics</div>
+      <div class="kpi-grid" id="kpi-grid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🧠 Narrative summary</div>
+      <div class="narrative" id="narrative-text"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✅ Recommended actions</div>
+      <ul class="recs" id="recs-list"></ul>
+    </div>
+
+    <div class="footer-btns">
+      <button onclick="alert('Tip: Copy the insights and paste into ChatGPT or Claude for deeper analysis!')">🔍 Dig deeper</button>
+      <button onclick="resetAll()">🔄 New analysis</button>
+      <button onclick="copyResults()">📋 Copy results</button>
+    </div>
+
+  </div>
+
+  <div class="powered">
+    Powered by <a href="https://groq.com" target="_blank">Groq AI</a> · Built with ❤️ · 
+    <a href="https://github.com" target="_blank">View on GitHub</a>
+  </div>
+
+</div>
+
+<script>
+const SAMPLES = {
+  sales: `Month,Revenue,Units,Avg_Deal,Region,Target
+Jan,42000,210,200,North,45000
+Feb,38500,190,202,North,45000
+Mar,51000,240,212,North,45000
+Apr,47500,215,220,South,48000
+May,55200,260,212,South,48000
+Jun,61800,290,213,South,48000
+Jul,48000,215,223,East,50000
+Aug,43200,195,221,East,50000
+Sep,67500,310,217,East,50000
+Oct,72100,330,218,West,55000
+Nov,68900,315,218,West,55000
+Dec,81500,370,220,West,55000`,
+
+  ecom: `Product,Views,Add_to_Cart,Purchases,Revenue,Returns,Rating
+Wireless Headphones,12400,1860,620,43400,31,4.3
+Running Shoes,8200,1230,490,39200,58,4.1
+Smart Watch,15600,2340,780,109200,23,4.6
+Laptop Stand,5400,810,405,20250,12,4.8
+USB-C Hub,9800,1470,735,22050,44,4.2
+Desk Lamp,3200,480,240,8400,8,4.5
+Water Bottle,6700,1005,670,13400,15,4.7
+Keyboard,11200,1680,560,67200,36,4.4`,
+
+  social: `Platform,Followers,Posts,Reach,Likes,Comments,Shares,CTR_pct
+Instagram,48200,24,310000,18600,2240,4100,3.2
+YouTube,31500,8,520000,14200,1860,9200,5.1
+Twitter,22100,60,180000,5400,820,3600,1.8
+LinkedIn,18700,16,95000,4200,610,1800,4.4
+Facebook,54000,20,210000,6800,920,5200,2.1
+Snapchat,12400,30,88000,3100,290,1200,1.4`,
+
+  hr: `Department,Headcount,Openings,Attrition_pct,Avg_Tenure_yr,Satisfaction,Budget_USD
+Engineering,142,18,12,3.2,7.8,4200000
+Product,38,4,9,4.1,8.1,1100000
+Sales,65,12,22,1.8,6.4,1900000
+Marketing,29,3,11,2.9,7.5,850000
+Operations,47,6,14,3.6,7.1,1200000
+Customer Success,54,9,18,2.1,6.9,1400000
+Finance,22,1,6,5.4,8.3,620000`
+};
+
+let foci = new Set(['trends','anomalies','kpis']);
+let lastResult = null;
+
+// API Key management (stored in localStorage)
+function saveKey() {
+  const k = document.getElementById('api-key-input').value.trim();
+  if (!k.startsWith('gsk_')) { alert('That does not look like a Groq key. It should start with gsk_'); return; }
+  localStorage.setItem('groq_key', k);
+  document.getElementById('api-banner').classList.add('hidden');
+  alert('✅ API key saved! You can now run analyses.');
+}
+
+function getKey() { return localStorage.getItem('groq_key') || ''; }
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (getKey()) document.getElementById('api-banner').classList.add('hidden');
+  loadSample('sales', document.querySelector('.sample-btn.active'));
+});
+
+function loadSample(key, btn) {
+  document.getElementById('raw-input').value = SAMPLES[key];
+  document.querySelectorAll('.sample-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  resetAll(true);
+}
+
+function toggleChip(btn) {
+  const f = btn.dataset.f;
+  if (foci.has(f)) { if (foci.size > 1) { foci.delete(f); btn.classList.remove('sel'); } }
+  else { foci.add(f); btn.classList.add('sel'); }
+}
+
+function setPipeline(step) {
+  for (let i = 0; i < 5; i++) {
+    const el = document.getElementById('pip'+i);
+    el.classList.remove('active','done');
+    if (i < step) el.classList.add('done');
+    else if (i === step) el.classList.add('active');
+  }
+}
+
+function setStep(i, done) {
+  const d = document.getElementById('l'+i);
+  if (done) { d.textContent = '✓'; d.classList.remove('spin'); d.classList.add('done'); }
+  else { d.textContent = ''; d.classList.add('spin'); d.classList.remove('done'); }
+}
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function runAnalysis() {
+  const raw = document.getElementById('raw-input').value.trim();
+  const key = getKey();
+  if (!raw) { showError('Please paste some data first.'); return; }
+  if (!key) { showError('Please enter your Groq API key first (see the yellow box above).'); return; }
+
+  hideError();
+  document.getElementById('run-btn').disabled = true;
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('loading').classList.add('show');
+  setPipeline(1); setStep(0, false);
+  await sleep(500); setStep(0, true);
+  setPipeline(2); setStep(1, false);
+  await sleep(400);
+
+  const fociList = [...foci].join(', ');
+  const prompt = `You are a senior data analyst. Analyze this raw business data and return ONLY valid JSON, no markdown, no explanation.
+
+Data:
+${raw}
+
+Focus: ${fociList}
+
+Return exactly this JSON:
+{
+  "kpis": [
+    {"label": "string", "value": "string", "sub": "string", "trend": "up|down|neutral"}
+  ],
+  "narrative": "3-4 sentences with specific numbers from the data",
+  "recommendations": [
+    {"text": "string", "priority": "high|medium|low"}
+  ]
+}
+
+Rules: kpis = exactly 4 items. recommendations = exactly 4 items ordered high to low. Return raw JSON only.`;
+
+  try {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + key
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3,
+        max_tokens: 1000
+      })
+    });
+
+    setStep(1, true); setPipeline(3); setStep(2, false); await sleep(400);
+
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error?.message || 'Groq API error');
+
+    let text = data.choices[0].message.content;
+    text = text.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(text);
+
+    setStep(2, true); setPipeline(4); setStep(3, false); await sleep(300);
+    setStep(3, true);
+
+    await sleep(200);
+    document.getElementById('loading').classList.remove('show');
+    renderResults(parsed);
+    lastResult = parsed;
+
+  } catch(err) {
+    document.getElementById('loading').classList.remove('show');
+    showError('Error: ' + err.message + '. Check your API key or try again.');
+    document.getElementById('run-btn').disabled = false;
+    setPipeline(0);
+  }
+}
+
+function renderResults(d) {
+  const grid = document.getElementById('kpi-grid');
+  grid.innerHTML = '';
+  (d.kpis||[]).forEach(k => {
+    const badge = k.trend==='up' ? '<span class="badge badge-up">↑ up</span>'
+                : k.trend==='down' ? '<span class="badge badge-dn">↓ down</span>'
+                : '<span class="badge badge-nt">→ stable</span>';
+    grid.innerHTML += `<div class="kpi">
+      <div class="kpi-lbl">${k.label}</div>
+      <div class="kpi-val">${k.value}</div>
+      <div class="kpi-sub">${k.sub||''}</div>
+      ${badge}
+    </div>`;
+  });
+
+  document.getElementById('narrative-text').textContent = d.narrative || '';
+
+  const ul = document.getElementById('recs-list');
+  ul.innerHTML = '';
+  (d.recommendations||[]).forEach(r => {
+    const cls = r.priority==='high' ? 'dot-high' : r.priority==='medium' ? 'dot-med' : 'dot-low';
+    ul.innerHTML += `<li class="rec"><div class="rec-dot ${cls}"></div><span>${r.text}</span></li>`;
+  });
+
+  document.getElementById('results').classList.add('show');
+  document.getElementById('run-btn').disabled = false;
+}
+
+function resetAll(keepData) {
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('loading').classList.remove('show');
+  document.getElementById('run-btn').disabled = false;
+  hideError(); setPipeline(0);
+  if (!keepData) document.getElementById('raw-input').value = '';
+}
+
+function copyResults() {
+  if (!lastResult) return;
+  const text = `KEY METRICS\n${(lastResult.kpis||[]).map(k=>`${k.label}: ${k.value} (${k.trend})`).join('\n')}\n\nSUMMARY\n${lastResult.narrative}\n\nRECOMMENDATIONS\n${(lastResult.recommendations||[]).map((r,i)=>`${i+1}. [${r.priority.toUpperCase()}] ${r.text}`).join('\n')}`;
+  navigator.clipboard.writeText(text).then(() => alert('✅ Results copied to clipboard!'));
+}
+
+function showError(msg) { const b = document.getElementById('error-box'); b.textContent = msg; b.classList.add('show'); }
+function hideError() { document.getElementById('error-box').classList.remove('show'); }
+</script>
+</body>
+</html>
