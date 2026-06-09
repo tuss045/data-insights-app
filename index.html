@@ -3,497 +3,452 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Data → Insights | AI Workflow</title>
+<title>G2V Channel Growth Analyser</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f6f6f4;--surface:#ffffff;--surface2:#f0efec;--surface3:#e8e7e3;
+  --border:rgba(0,0,0,0.09);--border-md:rgba(0,0,0,0.15);
+  --text:#1a1a18;--text2:#5c5c58;--text3:#9c9c96;
+  --blue:#2563eb;--blue-bg:#eff6ff;--blue-bd:#bfdbfe;--blue-text:#1d4ed8;
+  --green:#16a34a;--green-bg:#f0fdf4;--green-bd:#bbf7d0;--green-text:#15803d;
+  --red:#dc2626;--red-bg:#fef2f2;--red-bd:#fecaca;--red-text:#b91c1c;
+  --yellow-bg:#fefce8;--yellow-bd:#fde68a;--yellow-text:#92400e;
+  --purple-bg:#faf5ff;--purple-bd:#e9d5ff;--purple-text:#7c3aed;
+  --orange-bg:#fff7ed;--orange-bd:#fed7aa;--orange-text:#c2410c;
+  --r:10px;--rlg:14px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#141412;--surface:#1e1e1c;--surface2:#282826;--surface3:#323230;
+  --border:rgba(255,255,255,0.07);--border-md:rgba(255,255,255,0.13);
+  --text:#e6e6e0;--text2:#9a9a94;--text3:#606058;
+  --blue-bg:#1a2d4a;--blue-bd:#1e40af;--blue-text:#93c5fd;
+  --green-bg:#14231e;--green-bd:#166534;--green-text:#86efac;
+  --red-bg:#2a1414;--red-bd:#991b1b;--red-text:#fca5a5;
+  --yellow-bg:#221e0e;--yellow-bd:#92400e;--yellow-text:#fde68a;
+  --purple-bg:#1e1428;--purple-bd:#6d28d9;--purple-text:#c4b5fd;
+  --orange-bg:#1e1208;--orange-bd:#c2410c;--orange-text:#fdba74;
+}}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:1.5rem 1rem 3rem}
+.wrap{max-width:740px;margin:0 auto}
 
-  :root {
-    --bg: #f7f7f5;
-    --surface: #ffffff;
-    --surface2: #f1f0ed;
-    --border: rgba(0,0,0,0.1);
-    --border-md: rgba(0,0,0,0.18);
-    --text: #1a1a18;
-    --text2: #5a5a56;
-    --text3: #9a9a94;
-    --blue: #2563eb;
-    --blue-bg: #eff6ff;
-    --blue-text: #1d4ed8;
-    --green-bg: #f0fdf4;
-    --green-text: #15803d;
-    --red-bg: #fef2f2;
-    --red-text: #dc2626;
-    --yellow-bg: #fefce8;
-    --yellow-text: #a16207;
-    --radius: 10px;
-    --radius-lg: 14px;
-  }
+/* Header */
+.hdr{margin-bottom:1.75rem}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hdr h1{font-size:22px;font-weight:600}
+.hdr h1 span{color:var(--blue)}
+.hdr p{font-size:13px;color:var(--text2);margin-top:4px}
+.badge-pw{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--purple-bg);border:1px solid var(--purple-bd);color:var(--purple-text);font-weight:500;white-space:nowrap}
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1a1a18;
-      --surface: #242422;
-      --surface2: #2e2e2c;
-      --border: rgba(255,255,255,0.08);
-      --border-md: rgba(255,255,255,0.15);
-      --text: #e8e8e2;
-      --text2: #a0a09a;
-      --text3: #606058;
-      --blue-bg: #1e2d4a;
-      --blue-text: #93c5fd;
-      --green-bg: #14251e;
-      --green-text: #86efac;
-      --red-bg: #2c1515;
-      --red-text: #fca5a5;
-      --yellow-bg: #2a2010;
-      --yellow-text: #fde68a;
-    }
-  }
+/* API banner */
+.api-banner{background:var(--yellow-bg);border:1px solid var(--yellow-bd);border-radius:var(--r);padding:13px 15px;margin-bottom:1.25rem;display:flex;gap:10px;align-items:flex-start}
+.api-banner.hidden{display:none}
+.api-banner p{font-size:12px;color:var(--yellow-text);margin-bottom:8px}
+.key-row{display:flex;gap:8px}
+.key-row input{flex:1;padding:7px 11px;font-size:12px;font-family:monospace;border:1px solid var(--border-md);border-radius:8px;background:var(--surface);color:var(--text)}
+.key-row input:focus{outline:2px solid var(--blue)}
+.btn-save{padding:7px 14px;font-size:12px;font-weight:600;border-radius:8px;border:none;background:var(--blue);color:#fff;cursor:pointer;white-space:nowrap}
+.btn-save:hover{opacity:0.85}
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 2rem 1rem;
-  }
+/* Card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:1.25rem;margin-bottom:1rem}
+.lbl{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:9px}
 
-  .container { max-width: 700px; margin: 0 auto; }
+/* Tabs for paste method */
+.tabs{display:flex;gap:4px;margin-bottom:14px;background:var(--surface2);padding:4px;border-radius:var(--r)}
+.tab{flex:1;padding:7px;font-size:12px;font-weight:500;text-align:center;border-radius:7px;border:none;background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s}
+.tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.1)}
 
-  /* Header */
-  .header { text-align: center; margin-bottom: 2rem; }
-  .header h1 { font-size: 28px; font-weight: 600; margin-bottom: 6px; }
-  .header h1 span { color: var(--blue); }
-  .header p { font-size: 14px; color: var(--text2); }
+/* Paste area */
+textarea{width:100%;min-height:120px;resize:vertical;font-family:'Courier New',monospace;font-size:11.5px;padding:10px 12px;border-radius:var(--r);border:1px solid var(--border-md);background:var(--surface2);color:var(--text);line-height:1.6}
+textarea:focus{outline:2px solid var(--blue);border-color:transparent}
+.hint{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.6}
 
-  /* API Key banner */
-  .api-banner {
-    background: var(--yellow-bg);
-    border: 1px solid var(--border-md);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    margin-bottom: 1.5rem;
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-  }
-  .api-banner.hidden { display: none; }
-  .api-banner-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-  .api-banner-body { flex: 1; }
-  .api-banner-body p { font-size: 13px; color: var(--yellow-text); margin-bottom: 8px; }
-  .api-key-row { display: flex; gap: 8px; }
-  .api-key-row input {
-    flex: 1; padding: 8px 12px; font-size: 13px; font-family: monospace;
-    border: 1px solid var(--border-md); border-radius: 8px;
-    background: var(--surface); color: var(--text);
-  }
-  .api-key-row input:focus { outline: 2px solid var(--blue); }
-  .btn-sm {
-    padding: 8px 14px; font-size: 13px; font-weight: 500;
-    border-radius: 8px; border: none; cursor: pointer;
-    background: var(--blue); color: white; white-space: nowrap;
-    transition: opacity 0.15s;
-  }
-  .btn-sm:hover { opacity: 0.85; }
+/* Channel selector */
+.ch-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.ch-chip{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid var(--border-md);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s}
+.ch-chip:hover{background:var(--surface2)}
+.ch-chip.sel{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue-text);font-weight:500}
 
-  /* Pipeline bar */
-  .pipeline {
-    display: flex; align-items: center; gap: 4px;
-    margin-bottom: 1.5rem; padding: 12px 16px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); overflow-x: auto;
-  }
-  .pip { display: flex; align-items: center; gap: 5px; padding: 4px 10px;
-    border-radius: 20px; font-size: 12px; font-weight: 500;
-    color: var(--text3); white-space: nowrap; transition: all 0.3s; }
-  .pip.active { background: var(--blue-bg); color: var(--blue-text); }
-  .pip.done { background: var(--green-bg); color: var(--green-text); }
-  .pip-arr { color: var(--text3); font-size: 11px; flex-shrink: 0; }
+/* Run btn */
+.run-btn{width:100%;margin-top:13px;padding:11px;font-size:14px;font-weight:600;border-radius:var(--r);border:none;background:var(--blue);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.15s}
+.run-btn:hover:not(:disabled){opacity:0.87}
+.run-btn:disabled{opacity:0.42;cursor:not-allowed}
 
-  /* Card */
-  .card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem;
-  }
+/* Error */
+.err{margin-top:10px;padding:10px 13px;border-radius:var(--r);background:var(--red-bg);color:var(--red-text);font-size:13px;display:none}
+.err.show{display:block}
 
-  .label {
-    font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
-    text-transform: uppercase; color: var(--text3); margin-bottom: 10px;
-  }
+/* Loading */
+.loading{display:none;flex-direction:column;gap:9px;padding:0.5rem 0}
+.loading.show{display:flex}
+.load-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)}
+.ldot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border-md);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px}
+.ldot.spin{border-top-color:var(--blue);animation:spin 0.75s linear infinite}
+.ldot.done{background:var(--green-bg);border-color:var(--green-bd);color:var(--green-text);font-weight:700}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-  /* Sample buttons */
-  .sample-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-  .sample-btn {
-    font-size: 12px; padding: 5px 12px; border-radius: 20px;
-    border: 1px solid var(--border-md); background: transparent;
-    color: var(--text2); cursor: pointer; transition: all 0.15s;
-  }
-  .sample-btn:hover { background: var(--surface2); color: var(--text); }
-  .sample-btn.active { background: var(--blue-bg); border-color: var(--blue); color: var(--blue-text); }
+/* Results */
+.results{display:none}
+.results.show{display:block}
 
-  /* Textarea */
-  textarea {
-    width: 100%; min-height: 140px; resize: vertical;
-    font-family: 'Courier New', monospace; font-size: 12px;
-    padding: 10px 12px; border-radius: var(--radius);
-    border: 1px solid var(--border-md); background: var(--surface2);
-    color: var(--text); line-height: 1.65;
-  }
-  textarea:focus { outline: 2px solid var(--blue); border-color: transparent; }
+/* Winner banner */
+.winner-banner{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:var(--rlg);border:1px solid var(--green-bd);background:var(--green-bg);margin-bottom:1rem}
+.winner-trophy{font-size:28px;flex-shrink:0}
+.winner-body h2{font-size:16px;font-weight:600;color:var(--green-text)}
+.winner-body p{font-size:12px;color:var(--text2);margin-top:3px}
 
-  /* Focus chips */
-  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-  .chip {
-    font-size: 12px; padding: 5px 12px; border-radius: 20px;
-    border: 1px solid var(--border-md); background: transparent;
-    color: var(--text2); cursor: pointer; transition: all 0.15s;
-  }
-  .chip:hover { background: var(--surface2); }
-  .chip.sel { background: var(--blue-bg); border-color: var(--blue); color: var(--blue-text); }
+/* Channel cards grid */
+.ch-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:1rem}
+.ch-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:14px;position:relative;overflow:hidden}
+.ch-card.top-card{border-color:var(--green-bd);background:var(--green-bg)}
+.ch-card-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch-stat{margin-bottom:6px}
+.ch-stat-lbl{font-size:10px;color:var(--text3)}
+.ch-stat-val{font-size:18px;font-weight:600;color:var(--text)}
+.ch-stat-sub{font-size:10px;color:var(--text2);margin-top:1px}
+.rank-badge{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.rank-1{background:var(--yellow-bg);color:#b45309;border:1px solid var(--yellow-bd)}
+.rank-2{background:var(--surface3);color:var(--text2);border:1px solid var(--border-md)}
+.rank-3{background:var(--orange-bg);color:var(--orange-text);border:1px solid var(--orange-bd)}
+.rank-4{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
 
-  /* Run button */
-  .run-btn {
-    width: 100%; margin-top: 14px; padding: 11px;
-    font-size: 14px; font-weight: 600; border-radius: var(--radius);
-    border: none; background: var(--blue); color: white;
-    cursor: pointer; transition: opacity 0.15s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
-  .run-btn:hover:not(:disabled) { opacity: 0.88; }
-  .run-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+/* Growth bar */
+.growth-section{margin-bottom:1rem}
+.growth-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.growth-name{font-size:12px;color:var(--text2);width:140px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.growth-bar-wrap{flex:1;height:10px;background:var(--surface2);border-radius:5px;overflow:hidden}
+.growth-bar{height:100%;border-radius:5px;transition:width 0.6s ease;background:var(--blue)}
+.growth-bar.top{background:var(--green)}
+.growth-val{font-size:12px;font-weight:600;color:var(--text);min-width:60px;text-align:right}
 
-  /* Error */
-  .error {
-    margin-top: 10px; padding: 10px 14px; border-radius: var(--radius);
-    background: var(--red-bg); color: var(--red-text);
-    font-size: 13px; display: none;
-  }
-  .error.show { display: block; }
+/* Narrative */
+.narrative{font-size:13px;line-height:1.8;color:var(--text2);white-space:pre-wrap}
 
-  /* Loading */
-  .loading { display: none; flex-direction: column; gap: 10px; padding: 0.5rem 0; }
-  .loading.show { display: flex; }
-  .load-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text2); }
-  .load-dot {
-    width: 20px; height: 20px; border-radius: 50%;
-    border: 2px solid var(--border-md); flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; font-size: 11px;
-  }
-  .load-dot.spin { border-top-color: var(--blue); animation: spin 0.8s linear infinite; }
-  .load-dot.done { background: var(--green-bg); border-color: var(--green-text); color: var(--green-text); font-weight: 700; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* Recs */
+.recs{list-style:none;display:flex;flex-direction:column;gap:8px}
+.rec{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border-radius:var(--r);border:1px solid var(--border);font-size:13px;color:var(--text);line-height:1.55}
+.rdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.r-high{background:#ef4444}.r-med{background:#f59e0b}.r-low{background:#3b82f6}
 
-  /* Results */
-  .results { display: none; }
-  .results.show { display: block; }
+/* Priority tag */
+.ptag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;flex-shrink:0;margin-top:2px}
+.ptag-high{background:var(--red-bg);color:var(--red-text)}
+.ptag-med{background:var(--yellow-bg);color:var(--yellow-text)}
+.ptag-low{background:var(--blue-bg);color:var(--blue-text)}
 
-  /* KPI grid */
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
-  .kpi {
-    background: var(--surface2); border-radius: var(--radius);
-    padding: 14px; display: flex; flex-direction: column; gap: 4px;
-  }
-  .kpi-lbl { font-size: 11px; color: var(--text2); }
-  .kpi-val { font-size: 22px; font-weight: 600; color: var(--text); }
-  .kpi-sub { font-size: 11px; color: var(--text3); }
-  .badge {
-    display: inline-block; font-size: 10px; font-weight: 600;
-    padding: 2px 7px; border-radius: 5px; margin-top: 2px;
-  }
-  .badge-up { background: var(--green-bg); color: var(--green-text); }
-  .badge-dn { background: var(--red-bg); color: var(--red-text); }
-  .badge-nt { background: var(--yellow-bg); color: var(--yellow-text); }
+/* Section title */
+.sec-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:13px;display:flex;align-items:center;gap:7px}
 
-  /* Narrative */
-  .narrative { font-size: 13px; line-height: 1.8; color: var(--text2); white-space: pre-wrap; }
-
-  /* Recs */
-  .recs { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-  .rec {
-    display: flex; align-items: flex-start; gap: 10px;
-    padding: 10px 12px; border-radius: var(--radius);
-    border: 1px solid var(--border); font-size: 13px;
-    color: var(--text); line-height: 1.55;
-  }
-  .rec-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    flex-shrink: 0; margin-top: 5px;
-  }
-  .dot-high { background: #ef4444; }
-  .dot-med  { background: #f59e0b; }
-  .dot-low  { background: #3b82f6; }
-
-  /* Footer actions */
-  .footer-btns { display: flex; gap: 8px; margin-top: 1rem; flex-wrap: wrap; }
-  .footer-btns button {
-    flex: 1; min-width: 120px; padding: 9px 12px; font-size: 13px;
-    border-radius: var(--radius); border: 1px solid var(--border-md);
-    background: var(--surface); color: var(--text2); cursor: pointer;
-    transition: background 0.15s;
-  }
-  .footer-btns button:hover { background: var(--surface2); color: var(--text); }
-
-  /* Card section title */
-  .card-title {
-    font-size: 14px; font-weight: 600; color: var(--text);
-    margin-bottom: 12px; display: flex; align-items: center; gap: 7px;
-  }
-
-  /* Powered by */
-  .powered {
-    text-align: center; font-size: 11px; color: var(--text3);
-    margin-top: 2rem; padding-bottom: 1rem;
-  }
-  .powered a { color: var(--text3); }
+/* Footer */
+.footer-btns{display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap}
+.footer-btns button{flex:1;min-width:110px;padding:9px 12px;font-size:13px;border-radius:var(--r);border:1px solid var(--border-md);background:var(--surface);color:var(--text2);cursor:pointer;transition:background 0.15s}
+.footer-btns button:hover{background:var(--surface2);color:var(--text)}
+.powered{text-align:center;font-size:11px;color:var(--text3);margin-top:2rem}
+.powered a{color:var(--text3)}
 </style>
 </head>
 <body>
-<div class="container">
+<div class="wrap">
 
-  <div class="header">
-    <h1>Data <span>→</span> Insights</h1>
-    <p>Paste raw data, get instant AI-powered business analysis</p>
+  <div class="hdr">
+    <div class="hdr-top">
+      <h1>📊 Channel <span>Growth</span> Analyser</h1>
+      <span class="badge-pw">G2V · Physics Wallah</span>
+    </div>
+    <p>Compare channel performance across YouTube, Instagram & Snapchat — week by week</p>
   </div>
 
-  <!-- API Key banner -->
+  <!-- API Key -->
   <div class="api-banner" id="api-banner">
-    <div class="api-banner-icon">🔑</div>
-    <div class="api-banner-body">
-      <p>Enter your free <strong>Groq API key</strong> to activate. Get one free at <a href="https://console.groq.com" target="_blank" style="color:inherit;font-weight:600">console.groq.com</a> → API Keys.</p>
-      <div class="api-key-row">
-        <input type="password" id="api-key-input" placeholder="gsk_...your key here..." autocomplete="off"/>
-        <button class="btn-sm" onclick="saveKey()">Save</button>
+    <div style="font-size:18px;flex-shrink:0">🔑</div>
+    <div style="flex:1">
+      <p>Enter your free <strong>Groq API key</strong> to activate AI analysis. Get one free at <a href="https://console.groq.com" target="_blank" style="color:inherit;font-weight:600">console.groq.com</a> → API Keys. Key stays in your browser only.</p>
+      <div class="key-row">
+        <input type="password" id="api-key-input" placeholder="gsk_...paste your key here..."/>
+        <button class="btn-save" onclick="saveKey()">Save key</button>
       </div>
     </div>
   </div>
 
-  <!-- Pipeline -->
-  <div class="pipeline">
-    <div class="pip active" id="pip0">📥 Raw data</div>
-    <span class="pip-arr">›</span>
-    <div class="pip" id="pip1">⚙️ Parse</div>
-    <span class="pip-arr">›</span>
-    <div class="pip" id="pip2">📊 Analyse</div>
-    <span class="pip-arr">›</span>
-    <div class="pip" id="pip3">💡 Insights</div>
-    <span class="pip-arr">›</span>
-    <div class="pip" id="pip4">🚀 Actions</div>
-  </div>
-
-  <!-- Input card -->
+  <!-- Input -->
   <div class="card">
-    <div class="label">Sample datasets</div>
-    <div class="sample-row">
-      <button class="sample-btn active" onclick="loadSample('sales',this)">Sales report</button>
-      <button class="sample-btn" onclick="loadSample('ecom',this)">E-commerce</button>
-      <button class="sample-btn" onclick="loadSample('social',this)">Social media</button>
-      <button class="sample-btn" onclick="loadSample('hr',this)">HR / headcount</button>
+    <div class="lbl">Paste your weekly analytics data</div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('csv',this)">CSV / Excel copy-paste</button>
+      <button class="tab" onclick="switchTab('sample',this)">Use sample data</button>
     </div>
 
-    <div class="label">Paste your data (CSV or plain text)</div>
-    <textarea id="raw-input" placeholder="Paste CSV, key-value, or tabular data here…"></textarea>
+    <div id="tab-csv">
+      <textarea id="raw-input" placeholder="Select your data rows in Excel/Sheets → Copy → Paste here.
 
-    <div class="label" style="margin-top:14px">Analysis focus</div>
-    <div class="chips">
-      <button class="chip sel" data-f="trends" onclick="toggleChip(this)">📈 Trends</button>
-      <button class="chip sel" data-f="anomalies" onclick="toggleChip(this)">⚠️ Anomalies</button>
-      <button class="chip sel" data-f="kpis" onclick="toggleChip(this)">📊 KPIs</button>
-      <button class="chip" data-f="risks" onclick="toggleChip(this)">🛡️ Risks</button>
-      <button class="chip" data-f="opportunities" onclick="toggleChip(this)">🚀 Opportunities</button>
+Expected columns (in any order):
+Channel Name, Week, Youtube Views, Youtube SS, Instagram Views, Instagram SS, Snapchat Views, Snapchat SS, Upload Count"></textarea>
+      <p class="hint">💡 Tip: Select from row 2 (skip header) and include all weeks you want to compare. The AI will figure out the rest.</p>
+    </div>
+
+    <div id="tab-sample" style="display:none">
+      <div class="ch-grid" style="margin-bottom:10px">
+        <button class="ch-chip sel" onclick="loadSample('may',this)">May data</button>
+        <button class="ch-chip" onclick="loadSample('june',this)">June data</button>
+        <button class="ch-chip" onclick="loadSample('full',this)">Full dataset</button>
+      </div>
+      <textarea id="sample-preview" readonly style="min-height:90px;opacity:0.7"></textarea>
+    </div>
+
+    <div class="lbl" style="margin-top:14px">Channels to compare</div>
+    <div class="ch-grid" id="ch-chips">
+      <button class="ch-chip sel" data-ch="Commerce_Classroom" onclick="toggleCh(this)">Commerce Classroom</button>
+      <button class="ch-chip sel" data-ch="Studyhub" onclick="toggleCh(this)">Studyhub</button>
+      <button class="ch-chip sel" data-ch="Commerce_Army" onclick="toggleCh(this)">Commerce Army</button>
+      <button class="ch-chip sel" data-ch="commercekafunda" onclick="toggleCh(this)">@commercekafunda</button>
     </div>
 
     <button class="run-btn" id="run-btn" onclick="runAnalysis()">
-      ✨ Generate insights
+      ✨ Analyse channel growth
     </button>
-    <div class="error" id="error-box"></div>
+    <div class="err" id="err-box"></div>
   </div>
 
   <!-- Loading -->
   <div class="loading" id="loading">
-    <div class="load-row"><div class="load-dot" id="l0"></div><span>Parsing data structure…</span></div>
-    <div class="load-row"><div class="load-dot" id="l1"></div><span>Running statistical analysis…</span></div>
-    <div class="load-row"><div class="load-dot" id="l2"></div><span>Identifying patterns &amp; anomalies…</span></div>
-    <div class="load-row"><div class="load-dot" id="l3"></div><span>Generating business recommendations…</span></div>
+    <div class="load-row"><div class="ldot" id="l0"></div><span>Reading channel data…</span></div>
+    <div class="load-row"><div class="ldot" id="l1"></div><span>Calculating growth metrics per channel…</span></div>
+    <div class="load-row"><div class="ldot" id="l2"></div><span>Ranking channels by performance…</span></div>
+    <div class="load-row"><div class="ldot" id="l3"></div><span>Generating strategic recommendations…</span></div>
   </div>
 
   <!-- Results -->
   <div class="results" id="results">
 
-    <div class="card">
-      <div class="card-title">📌 Key metrics</div>
-      <div class="kpi-grid" id="kpi-grid"></div>
+    <!-- Winner banner -->
+    <div class="winner-banner" id="winner-banner">
+      <div class="winner-trophy">🏆</div>
+      <div class="winner-body">
+        <h2 id="winner-title">Top performer: —</h2>
+        <p id="winner-sub">Loading…</p>
+      </div>
     </div>
 
+    <!-- Channel scorecards -->
+    <div class="card" style="padding-bottom:0.75rem">
+      <div class="sec-title">📋 Channel scorecards</div>
+      <div class="ch-cards" id="ch-cards"></div>
+    </div>
+
+    <!-- Growth bars -->
     <div class="card">
-      <div class="card-title">🧠 Narrative summary</div>
+      <div class="sec-title">📈 YouTube views comparison</div>
+      <div id="yt-bars" class="growth-section"></div>
+      <div class="sec-title" style="margin-top:1rem">📱 Instagram views comparison</div>
+      <div id="ig-bars" class="growth-section"></div>
+    </div>
+
+    <!-- AI Narrative -->
+    <div class="card">
+      <div class="sec-title">🧠 AI growth analysis</div>
       <div class="narrative" id="narrative-text"></div>
     </div>
 
+    <!-- Recommendations -->
     <div class="card">
-      <div class="card-title">✅ Recommended actions</div>
+      <div class="sec-title">✅ Channel-specific actions</div>
       <ul class="recs" id="recs-list"></ul>
     </div>
 
     <div class="footer-btns">
-      <button onclick="alert('Tip: Copy the insights and paste into ChatGPT or Claude for deeper analysis!')">🔍 Dig deeper</button>
+      <button onclick="copyResults()">📋 Copy report</button>
       <button onclick="resetAll()">🔄 New analysis</button>
-      <button onclick="copyResults()">📋 Copy results</button>
+      <button onclick="window.print()">🖨️ Print / PDF</button>
     </div>
 
   </div>
 
   <div class="powered">
-    Powered by <a href="https://groq.com" target="_blank">Groq AI</a> · Built with ❤️ · 
-    <a href="https://github.com" target="_blank">View on GitHub</a>
+    Built for G2V · <a href="https://console.groq.com" target="_blank">Powered by Groq AI</a> · <a href="https://github.com/tuss045/data-insights-app" target="_blank">GitHub</a>
   </div>
 
 </div>
-
 <script>
+// ── Sample data matching G2V format ──────────────────────────────────────────
 const SAMPLES = {
-  sales: `Month,Revenue,Units,Avg_Deal,Region,Target
-Jan,42000,210,200,North,45000
-Feb,38500,190,202,North,45000
-Mar,51000,240,212,North,45000
-Apr,47500,215,220,South,48000
-May,55200,260,212,South,48000
-Jun,61800,290,213,South,48000
-Jul,48000,215,223,East,50000
-Aug,43200,195,221,East,50000
-Sep,67500,310,217,East,50000
-Oct,72100,330,218,West,55000
-Nov,68900,315,218,West,55000
-Dec,81500,370,220,West,55000`,
+  may: `Channel Name,Week,Youtube Views,Youtube SS,Instagram Views,Instagram SS,Snapchat Views,Snapchat SS,Upload Count
+Commerce_Classroom,May Week 1,242145,13,11300,13,3081,13,13
+Studyhub,May Week 1,50353,13,4407,13,1397,13,13
+Commerce_Army,May Week 1,5335658,13,2817,41,1397,13,13
+commercekafunda,May Week 1,15460,13,2353,46,571,13,13
+Commerce_Classroom,May Week 2,24955,14,3268,14,1873,14,14
+Studyhub,May Week 2,51323,12,3193,12,2407,12,12
+Commerce_Army,May Week 2,3557083,14,2463,19,68,14,14
+commercekafunda,May Week 2,17818,14,4153,14,853,14,14
+Commerce_Classroom,May Week 3,21144,13,3274,13,6241,13,13
+Studyhub,May Week 3,56800,15,6477,15,2478,15,15
+Commerce_Army,May Week 3,866836,13,2455,18,24,13,13
+commercekafunda,May Week 3,58717,11,1962,11,2189,11,11
+Commerce_Classroom,May Week 4,68010,22,3427,22,45948,22,22
+Studyhub,May Week 4,66528,15,9890,15,124642,15,15
+Commerce_Army,May Week 4,373400,13,3547,13,1106,15,13
+commercekafunda,May Week 4,615229,15,2788,15,1106,15,15`,
 
-  ecom: `Product,Views,Add_to_Cart,Purchases,Revenue,Returns,Rating
-Wireless Headphones,12400,1860,620,43400,31,4.3
-Running Shoes,8200,1230,490,39200,58,4.1
-Smart Watch,15600,2340,780,109200,23,4.6
-Laptop Stand,5400,810,405,20250,12,4.8
-USB-C Hub,9800,1470,735,22050,44,4.2
-Desk Lamp,3200,480,240,8400,8,4.5
-Water Bottle,6700,1005,670,13400,15,4.7
-Keyboard,11200,1680,560,67200,36,4.4`,
+  june: `Channel Name,Week,Youtube Views,Youtube SS,Instagram Views,Instagram SS,Snapchat Views,Snapchat SS,Upload Count
+Commerce_Classroom,June Week 1,43443,26,4069,8,21795,26,26
+Studyhub,June Week 1,73573,14,5334,0,69,14,14
+Commerce_Army,June Week 1,1275053,26,7033,18,4067,26,26
+commercekafunda,June Week 1,140923,51,2088,47,891,51,51`,
 
-  social: `Platform,Followers,Posts,Reach,Likes,Comments,Shares,CTR_pct
-Instagram,48200,24,310000,18600,2240,4100,3.2
-YouTube,31500,8,520000,14200,1860,9200,5.1
-Twitter,22100,60,180000,5400,820,3600,1.8
-LinkedIn,18700,16,95000,4200,610,1800,4.4
-Facebook,54000,20,210000,6800,920,5200,2.1
-Snapchat,12400,30,88000,3100,290,1200,1.4`,
-
-  hr: `Department,Headcount,Openings,Attrition_pct,Avg_Tenure_yr,Satisfaction,Budget_USD
-Engineering,142,18,12,3.2,7.8,4200000
-Product,38,4,9,4.1,8.1,1100000
-Sales,65,12,22,1.8,6.4,1900000
-Marketing,29,3,11,2.9,7.5,850000
-Operations,47,6,14,3.6,7.1,1200000
-Customer Success,54,9,18,2.1,6.9,1400000
-Finance,22,1,6,5.4,8.3,620000`
+  full: `Channel Name,Week,Youtube Views,Youtube SS,Instagram Views,Instagram SS,Snapchat Views,Snapchat SS,Upload Count
+Commerce_Classroom,May Week 1,242145,13,11300,13,3081,13,13
+Studyhub,May Week 1,50353,13,4407,13,1397,13,13
+Commerce_Army,May Week 1,5335658,13,2817,41,1397,13,13
+commercekafunda,May Week 1,15460,13,2353,46,571,13,13
+Commerce_Classroom,May Week 2,24955,14,3268,14,1873,14,14
+Studyhub,May Week 2,51323,12,3193,12,2407,12,12
+Commerce_Army,May Week 2,3557083,14,2463,19,68,14,14
+commercekafunda,May Week 2,17818,14,4153,14,853,14,14
+Commerce_Classroom,May Week 3,21144,13,3274,13,6241,13,13
+Studyhub,May Week 3,56800,15,6477,15,2478,15,15
+Commerce_Army,May Week 3,866836,13,2455,18,24,13,13
+commercekafunda,May Week 3,58717,11,1962,11,2189,11,11
+Commerce_Classroom,May Week 4,68010,22,3427,22,45948,22,22
+Studyhub,May Week 4,66528,15,9890,15,124642,15,15
+Commerce_Army,May Week 4,373400,13,3547,13,1106,15,13
+commercekafunda,May Week 4,615229,15,2788,15,1106,15,15
+Commerce_Classroom,June Week 1,43443,26,4069,8,21795,26,26
+Studyhub,June Week 1,73573,14,5334,0,69,14,14
+Commerce_Army,June Week 1,1275053,26,7033,18,4067,26,26
+commercekafunda,June Week 1,140923,51,2088,47,891,51,51`
 };
 
-let foci = new Set(['trends','anomalies','kpis']);
+// ── State ─────────────────────────────────────────────────────────────────────
+let activeTab = 'csv';
+let selectedChannels = new Set(['Commerce_Classroom','Studyhub','Commerce_Army','commercekafunda']);
 let lastResult = null;
 
-// API Key management (stored in localStorage)
+// ── Init ──────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  if (getKey()) document.getElementById('api-banner').classList.add('hidden');
+  loadSample('may', null);
+});
+
+// ── API Key ───────────────────────────────────────────────────────────────────
 function saveKey() {
   const k = document.getElementById('api-key-input').value.trim();
   if (!k.startsWith('gsk_')) { alert('That does not look like a Groq key. It should start with gsk_'); return; }
   localStorage.setItem('groq_key', k);
   document.getElementById('api-banner').classList.add('hidden');
-  alert('✅ API key saved! You can now run analyses.');
+  alert('✅ API key saved!');
 }
-
 function getKey() { return localStorage.getItem('groq_key') || ''; }
 
-window.addEventListener('DOMContentLoaded', () => {
-  if (getKey()) document.getElementById('api-banner').classList.add('hidden');
-  loadSample('sales', document.querySelector('.sample-btn.active'));
-});
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function switchTab(tab, btn) {
+  activeTab = tab;
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-csv').style.display = tab === 'csv' ? 'block' : 'none';
+  document.getElementById('tab-sample').style.display = tab === 'sample' ? 'block' : 'none';
+}
 
 function loadSample(key, btn) {
-  document.getElementById('raw-input').value = SAMPLES[key];
-  document.querySelectorAll('.sample-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  resetAll(true);
-}
-
-function toggleChip(btn) {
-  const f = btn.dataset.f;
-  if (foci.has(f)) { if (foci.size > 1) { foci.delete(f); btn.classList.remove('sel'); } }
-  else { foci.add(f); btn.classList.add('sel'); }
-}
-
-function setPipeline(step) {
-  for (let i = 0; i < 5; i++) {
-    const el = document.getElementById('pip'+i);
-    el.classList.remove('active','done');
-    if (i < step) el.classList.add('done');
-    else if (i === step) el.classList.add('active');
+  document.getElementById('sample-preview').value = SAMPLES[key];
+  if (btn) {
+    document.querySelectorAll('#tab-sample .ch-chip').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
   }
 }
 
-function setStep(i, done) {
-  const d = document.getElementById('l'+i);
-  if (done) { d.textContent = '✓'; d.classList.remove('spin'); d.classList.add('done'); }
-  else { d.textContent = ''; d.classList.add('spin'); d.classList.remove('done'); }
+function toggleCh(btn) {
+  const ch = btn.dataset.ch;
+  if (selectedChannels.has(ch)) {
+    if (selectedChannels.size > 1) { selectedChannels.delete(ch); btn.classList.remove('sel'); }
+  } else { selectedChannels.add(ch); btn.classList.add('sel'); }
 }
 
+// ── Loading steps ─────────────────────────────────────────────────────────────
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+function setStep(i, done) {
+  const d = document.getElementById('l'+i);
+  if (done) { d.textContent='✓'; d.classList.remove('spin'); d.classList.add('done'); }
+  else { d.textContent=''; d.classList.add('spin'); d.classList.remove('done'); }
+}
 
+// ── Main analysis ─────────────────────────────────────────────────────────────
 async function runAnalysis() {
-  const raw = document.getElementById('raw-input').value.trim();
   const key = getKey();
-  if (!raw) { showError('Please paste some data first.'); return; }
-  if (!key) { showError('Please enter your Groq API key first (see the yellow box above).'); return; }
+  const raw = activeTab === 'csv'
+    ? document.getElementById('raw-input').value.trim()
+    : document.getElementById('sample-preview').value.trim();
 
-  hideError();
+  if (!raw) { showErr('Please paste your data or select a sample dataset.'); return; }
+  if (!key) { showErr('Please enter your Groq API key in the yellow box above.'); return; }
+
+  hideErr();
   document.getElementById('run-btn').disabled = true;
   document.getElementById('results').classList.remove('show');
   document.getElementById('loading').classList.add('show');
-  setPipeline(1); setStep(0, false);
-  await sleep(500); setStep(0, true);
-  setPipeline(2); setStep(1, false);
-  await sleep(400);
 
-  const fociList = [...foci].join(', ');
-  const prompt = `You are a senior data analyst. Analyze this raw business data and return ONLY valid JSON, no markdown, no explanation.
+  setStep(0, false); await sleep(500); setStep(0, true);
+  setStep(1, false); await sleep(450);
+
+  const chList = [...selectedChannels].join(', ');
+  const prompt = `You are a senior social media analyst for an education company (G2V / Physics Wallah). 
+Analyze this weekly channel analytics data and return ONLY valid JSON, no markdown, no explanation.
 
 Data:
 ${raw}
 
-Focus: ${fociList}
+Channels to focus on: ${chList}
 
 Return exactly this JSON:
 {
-  "kpis": [
-    {"label": "string", "value": "string", "sub": "string", "trend": "up|down|neutral"}
+  "winner": {
+    "name": "channel name",
+    "reason": "one sentence why this channel is the top performer with specific numbers"
+  },
+  "channels": [
+    {
+      "name": "channel name",
+      "rank": 1,
+      "yt_total": "formatted number e.g. 1.2M",
+      "ig_total": "formatted number",
+      "growth_score": 85,
+      "yt_raw": 1200000,
+      "ig_raw": 50000,
+      "highlight": "best achievement in one short phrase",
+      "weakness": "main weakness in one short phrase"
+    }
   ],
-  "narrative": "3-4 sentences with specific numbers from the data",
+  "narrative": "4-5 sentences comparing all channels. Mention specific view counts, growth patterns, which platform each channel is strongest on, and which channel is underperforming and why.",
   "recommendations": [
-    {"text": "string", "priority": "high|medium|low"}
+    {
+      "channel": "channel name",
+      "action": "specific action to take",
+      "priority": "high|medium|low",
+      "platform": "YouTube|Instagram|Snapchat|All"
+    }
   ]
 }
 
-Rules: kpis = exactly 4 items. recommendations = exactly 4 items ordered high to low. Return raw JSON only.`;
+Rules:
+- channels array: all channels from the data, sorted rank 1 (best) to last
+- growth_score: 0-100 score based on total views + growth trend
+- yt_raw and ig_raw: total views as plain integers for bar chart
+- recommendations: exactly 4 items, one per channel ideally
+- Return raw JSON only`;
 
   try {
     const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + key
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.3,
-        max_tokens: 1000
+        temperature: 0.25, max_tokens: 1200
       })
     });
 
-    setStep(1, true); setPipeline(3); setStep(2, false); await sleep(400);
+    setStep(1, true); setStep(2, false); await sleep(400);
 
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error?.message || 'Groq API error');
@@ -502,66 +457,128 @@ Rules: kpis = exactly 4 items. recommendations = exactly 4 items ordered high to
     text = text.replace(/```json|```/g,'').trim();
     const parsed = JSON.parse(text);
 
-    setStep(2, true); setPipeline(4); setStep(3, false); await sleep(300);
-    setStep(3, true);
+    setStep(2, true); setStep(3, false); await sleep(350);
+    setStep(3, true); await sleep(200);
 
-    await sleep(200);
     document.getElementById('loading').classList.remove('show');
     renderResults(parsed);
     lastResult = parsed;
 
   } catch(err) {
     document.getElementById('loading').classList.remove('show');
-    showError('Error: ' + err.message + '. Check your API key or try again.');
+    showErr('Error: ' + err.message);
     document.getElementById('run-btn').disabled = false;
-    setPipeline(0);
   }
 }
 
+// ── Render ────────────────────────────────────────────────────────────────────
+function fmt(n) {
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
+  return n.toString();
+}
+
 function renderResults(d) {
-  const grid = document.getElementById('kpi-grid');
-  grid.innerHTML = '';
-  (d.kpis||[]).forEach(k => {
-    const badge = k.trend==='up' ? '<span class="badge badge-up">↑ up</span>'
-                : k.trend==='down' ? '<span class="badge badge-dn">↓ down</span>'
-                : '<span class="badge badge-nt">→ stable</span>';
-    grid.innerHTML += `<div class="kpi">
-      <div class="kpi-lbl">${k.label}</div>
-      <div class="kpi-val">${k.value}</div>
-      <div class="kpi-sub">${k.sub||''}</div>
-      ${badge}
+  // Winner banner
+  document.getElementById('winner-title').textContent = '🏆 Top performer: ' + (d.winner?.name || '—');
+  document.getElementById('winner-sub').textContent = d.winner?.reason || '';
+
+  // Channel cards
+  const cards = document.getElementById('ch-cards');
+  cards.innerHTML = '';
+  const rankClass = ['rank-1','rank-2','rank-3','rank-4'];
+  const rankEmoji = ['🥇','🥈','🥉','4'];
+  (d.channels||[]).forEach((ch, i) => {
+    const isTop = i === 0;
+    cards.innerHTML += `
+    <div class="ch-card ${isTop ? 'top-card' : ''}">
+      <div class="rank-badge ${rankClass[i]||'rank-4'}">${rankEmoji[i]||i+1}</div>
+      <div class="ch-card-name">${ch.name}</div>
+      <div class="ch-stat">
+        <div class="ch-stat-lbl">YouTube views</div>
+        <div class="ch-stat-val">${ch.yt_total}</div>
+      </div>
+      <div class="ch-stat">
+        <div class="ch-stat-lbl">Instagram views</div>
+        <div class="ch-stat-val">${ch.ig_total}</div>
+      </div>
+      <div class="ch-stat">
+        <div class="ch-stat-lbl">Growth score</div>
+        <div class="ch-stat-val" style="color:${isTop?'var(--green)':'var(--blue)'}">${ch.growth_score}/100</div>
+        <div class="ch-stat-sub">✅ ${ch.highlight}</div>
+        <div class="ch-stat-sub" style="color:var(--red-text)">⚠️ ${ch.weakness}</div>
+      </div>
     </div>`;
   });
 
+  // YT bars
+  const ytMax = Math.max(...(d.channels||[]).map(c => c.yt_raw||0));
+  const igMax = Math.max(...(d.channels||[]).map(c => c.ig_raw||0));
+  renderBars('yt-bars', d.channels, 'yt_raw', ytMax);
+  renderBars('ig-bars', d.channels, 'ig_raw', igMax);
+
+  // Narrative
   document.getElementById('narrative-text').textContent = d.narrative || '';
 
+  // Recs
   const ul = document.getElementById('recs-list');
   ul.innerHTML = '';
   (d.recommendations||[]).forEach(r => {
-    const cls = r.priority==='high' ? 'dot-high' : r.priority==='medium' ? 'dot-med' : 'dot-low';
-    ul.innerHTML += `<li class="rec"><div class="rec-dot ${cls}"></div><span>${r.text}</span></li>`;
+    const pc = r.priority==='high'?'r-high':r.priority==='medium'?'r-med':'r-low';
+    const tc = r.priority==='high'?'ptag-high':r.priority==='medium'?'ptag-med':'ptag-low';
+    ul.innerHTML += `<li class="rec">
+      <div class="rdot ${pc}"></div>
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:3px">${r.channel} · ${r.platform}</div>
+        ${r.action}
+      </div>
+      <span class="ptag ${tc}">${r.priority}</span>
+    </li>`;
   });
 
   document.getElementById('results').classList.add('show');
   document.getElementById('run-btn').disabled = false;
 }
 
-function resetAll(keepData) {
+function renderBars(containerId, channels, key, maxVal) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  (channels||[]).forEach((ch, i) => {
+    const val = ch[key] || 0;
+    const pct = maxVal > 0 ? Math.round((val / maxVal) * 100) : 0;
+    el.innerHTML += `<div class="growth-row">
+      <div class="growth-name">${ch.name}</div>
+      <div class="growth-bar-wrap"><div class="growth-bar ${i===0?'top':''}" style="width:${pct}%"></div></div>
+      <div class="growth-val">${fmt(val)}</div>
+    </div>`;
+  });
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function resetAll() {
   document.getElementById('results').classList.remove('show');
   document.getElementById('loading').classList.remove('show');
   document.getElementById('run-btn').disabled = false;
-  hideError(); setPipeline(0);
-  if (!keepData) document.getElementById('raw-input').value = '';
+  hideErr();
 }
 
 function copyResults() {
   if (!lastResult) return;
-  const text = `KEY METRICS\n${(lastResult.kpis||[]).map(k=>`${k.label}: ${k.value} (${k.trend})`).join('\n')}\n\nSUMMARY\n${lastResult.narrative}\n\nRECOMMENDATIONS\n${(lastResult.recommendations||[]).map((r,i)=>`${i+1}. [${r.priority.toUpperCase()}] ${r.text}`).join('\n')}`;
-  navigator.clipboard.writeText(text).then(() => alert('✅ Results copied to clipboard!'));
+  let text = `G2V CHANNEL GROWTH REPORT\n${'─'.repeat(40)}\n\n`;
+  text += `🏆 TOP PERFORMER: ${lastResult.winner?.name}\n${lastResult.winner?.reason}\n\n`;
+  text += `CHANNEL RANKINGS\n`;
+  (lastResult.channels||[]).forEach((c,i) => {
+    text += `${i+1}. ${c.name} — YT: ${c.yt_total} | IG: ${c.ig_total} | Score: ${c.growth_score}/100\n`;
+  });
+  text += `\nANALYSIS\n${lastResult.narrative}\n\nRECOMMENDATIONS\n`;
+  (lastResult.recommendations||[]).forEach((r,i) => {
+    text += `${i+1}. [${r.priority.toUpperCase()}] ${r.channel} (${r.platform}): ${r.action}\n`;
+  });
+  navigator.clipboard.writeText(text).then(() => alert('✅ Report copied to clipboard!'));
 }
 
-function showError(msg) { const b = document.getElementById('error-box'); b.textContent = msg; b.classList.add('show'); }
-function hideError() { document.getElementById('error-box').classList.remove('show'); }
+function showErr(msg) { const b=document.getElementById('err-box'); b.textContent=msg; b.classList.add('show'); }
+function hideErr() { document.getElementById('err-box').classList.remove('show'); }
 </script>
 </body>
 </html>
